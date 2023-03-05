@@ -20,6 +20,7 @@ You need to select one of the original files listed above, with/without correspo
 
 
 ### Limitations:
+- There is no post processing or evaluating the inheritance chain or standard values. It simply reads what is stored in the .dat files.
 - There is no version selector (Latest version is used)
 - There is no language selector (only English version of items is shown)
 - No search capabilities in place
