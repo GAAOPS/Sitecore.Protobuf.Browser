@@ -39,6 +39,21 @@
                     </TreeView.ItemTemplate>
                 </TreeView>
                 <ListView x:Name="FieldView" Grid.Column="1">
+                    <ListView.Resources>
+                        <ContextMenu x:Key="ItemContextMenu">
+                            <MenuItem x:Name="FieldViewCopyName" Header="Copy Field Name" 
+                                      Command="{Binding Path=Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" 
+                                      Click="FieldViewCopyName_OnClick"/>
+                            <MenuItem x:Name="FieldViewCopyValue" Header="Copy Field Value" 
+                                      Command="{Binding Path=Value, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" 
+                                      Click="FieldViewCopyValue_OnClick"/>
+                        </ContextMenu>
+                    </ListView.Resources>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}" >
+                            <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Field" DisplayMemberBinding="{Binding Name}" Width="200"></GridViewColumn>

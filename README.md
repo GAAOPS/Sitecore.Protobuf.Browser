@@ -11,14 +11,20 @@ Protobuf is a google based serializer: https://github.com/protocolbuffers/protob
 Here I have created a wpf app which allows you to browse this serialized files and check their contents.
 You can choose multiple files and items in the secondary files (none O.O.B) will be shown in red in the content tree, which means they are overwritten or are new in the secondary files.
 
+The fields in parentheses are added manually for information purposes  (ex. Item id, item path).
+
+
 You need to select one of the original files listed above, with/without corresponding secondary file(s).
 
 ![gif](./Protobuf.gif)
 
-Limitations:
+
+### Limitations:
 - There is no version selector (Latest version is used)
 - There is no language selector (only English version of items is shown)
 - No search capabilities in place
 
 Project is based on .net 4.8 sdk style with xmcloud assemblies are used in project. feel free to change them to sitecore kernel and build it.
 
+### Change log
+- Context menu for field section is added to provide easier copy

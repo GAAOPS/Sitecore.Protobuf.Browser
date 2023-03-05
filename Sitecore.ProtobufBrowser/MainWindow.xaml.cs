@@ -2,6 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Sitecore.ProtobufBrowser.Models;
@@ -65,6 +67,20 @@ namespace Sitecore.ProtobufBrowser
         private void ContentTree_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (e.NewValue is BaseItem item) FieldView.ItemsSource = item.Fields;
+        }
+
+        private void FieldViewCopyName_OnClick(object sender, RoutedEventArgs e)
+        {
+            var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
+            if (item is null) return;
+            System.Windows.Clipboard.SetText(item.Name);
+        }
+
+        private void FieldViewCopyValue_OnClick(object sender, RoutedEventArgs e)
+        {
+            var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
+            if (item is null) return;
+            System.Windows.Clipboard.SetText(item.Value);
         }
     }
 }
