@@ -3,25 +3,55 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Sitecore.ProtobufBrowser"
-        xmlns:model="clr-namespace:Sitecore.ProtobufBrowser.Models"
+        xmlns:converter="clr-namespace:Sitecore.ProtobufBrowser.Converters"
         mc:Ignorable="d"
         Title="Sitecore Protobuf Browser" Height="450" Width="800">
+    <Window.Resources>
+        <converter:BooleanOrConverter x:Key="booleanOrConverter" />
+        <converter:InverseBooleanConverter x:Key="inverseBooleanConverter" />
+    </Window.Resources>
+
     <Grid>
         <DockPanel>
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="File">
-                    <MenuItem Header="_Open" x:Name="FileOpenMenu" Click="FileOpenMenu_OnClick"/>
+                    <MenuItem Header="_Open" x:Name="FileOpenMenu" Click="FileOpenMenu_OnClick" />
                     <Separator />
-                    <MenuItem Header="_Exit" x:Name="FileExitMenu" Click="FileExitMenu_OnClick"/>
+                    <MenuItem Header="_Exit" x:Name="FileExitMenu" Click="FileExitMenu_OnClick" />
                 </MenuItem>
             </Menu>
+            <StackPanel DockPanel.Dock="Top">
+                <CheckBox IsChecked="{Binding Path=HidePrimaryFileItems}" Content="Hide primary files items" />
+            </StackPanel>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"></ColumnDefinition>
-                    <ColumnDefinition ></ColumnDefinition>
+                    <ColumnDefinition Width="300" />
+                    <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <TreeView x:Name="ContentTree" MinWidth="200" ItemsSource="{Binding Children}" Grid.Column="0" SelectedItemChanged="ContentTree_OnSelectedItemChanged">
+                <TreeView x:Name="ContentTree" MinWidth="200" ItemsSource="{Binding Children}" Grid.Column="0"
+                          SelectedItemChanged="ContentTree_OnSelectedItemChanged">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Value="False">
+                                    <DataTrigger.Binding>
+                                        <MultiBinding Converter="{StaticResource booleanOrConverter}">
+                                            <Binding Path="IsVisible" />
+                                            <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                                            <Binding
+                                                RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}"
+                                                Path="DataContext.HidePrimaryFileItems"
+                                                Converter="{StaticResource inverseBooleanConverter}" />
+                                        </MultiBinding>
+                                    </DataTrigger.Binding>
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate DataType="x:Type model:BaseItem" ItemsSource="{Binding Children}">
                             <TextBlock Text="{Binding Name}">
@@ -29,7 +59,7 @@
                                     <Style TargetType="{x:Type TextBlock}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Overwritten}" Value="True">
-                                                <Setter Property="Foreground" Value="Red"/>
+                                                <Setter Property="Foreground" Value="Red" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -41,27 +71,29 @@
                 <ListView x:Name="FieldView" Grid.Column="1">
                     <ListView.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
-                            <MenuItem x:Name="FieldViewCopyName" Header="Copy Field Name" 
-                                      Command="{Binding Path=Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" 
-                                      Click="FieldViewCopyName_OnClick"/>
-                            <MenuItem x:Name="FieldViewCopyValue" Header="Copy Field Value" 
-                                      Command="{Binding Path=Value, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}" Background="WhiteSmoke" 
-                                      Click="FieldViewCopyValue_OnClick"/>
+                            <MenuItem x:Name="FieldViewCopyName" Header="Copy Field Name"
+                                      Command="{Binding Path=Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
+                                      Background="WhiteSmoke"
+                                      Click="FieldViewCopyName_OnClick" />
+                            <MenuItem x:Name="FieldViewCopyValue" Header="Copy Field Value"
+                                      Command="{Binding Path=Value, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
+                                      Background="WhiteSmoke"
+                                      Click="FieldViewCopyValue_OnClick" />
                         </ContextMenu>
                     </ListView.Resources>
                     <ListView.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListViewItem}" >
+                        <Style TargetType="{x:Type ListViewItem}">
                             <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Field" DisplayMemberBinding="{Binding Name}" Width="200"></GridViewColumn>
-                            <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Value}" Width="1000"></GridViewColumn>
+                            <GridViewColumn Header="Field" DisplayMemberBinding="{Binding Name}" Width="200" />
+                            <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Value}" Width="1000" />
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <GridSplitter Grid.Column="0" BorderThickness="2" BorderBrush="BlueViolet"></GridSplitter>
+                <GridSplitter Grid.Column="0" BorderThickness="2" BorderBrush="BlueViolet" />
             </Grid>
         </DockPanel>
 
