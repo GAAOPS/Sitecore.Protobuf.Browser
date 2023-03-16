@@ -19,6 +19,16 @@ You need to select one of the original files listed above, with/without correspo
 ![gif](./Protobuf.gif)
 
 
+### Filtering:
+In this example if you have selected "items.master.spe.dat" and "items.master.dat", by clicking the "Hide primary files" checkbox,
+you can filter down the tree to show almost only the items from the powershell module:
+![gif](./filtering.jpg)
+
+
+## Important note
+Sitecore modules and basically secondary files are kind of sparse tree, that means they do not include the whole tree of the master/core/web database.
+because of that you need to always have a relevant data at hand(ex. items.master.dat) and select it with the relevant module.
+
 ### Limitations:
 - There is no post processing or evaluating the inheritance chain or standard values. It simply reads what is stored in the .dat files.
 - There is no version selector (Latest version is used)

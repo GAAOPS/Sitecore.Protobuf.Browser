@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Sitecore.ProtobufBrowser.Models;
@@ -23,6 +22,7 @@ namespace Sitecore.ProtobufBrowser
         {
             _itemProvider = itemProvider;
             Model = new MainView(this);
+            DataContext = Model;
             InitializeComponent();
         }
 
@@ -52,7 +52,7 @@ namespace Sitecore.ProtobufBrowser
                 }
 
                 Model.Children.Clear();
-                string language = "en";
+                var language = "en";
                 var rootItem = _itemProvider.GetItems(dialog.FileNames, language);
                 Model.Children.Add(rootItem);
                 DataContext = Model;
@@ -73,14 +73,14 @@ namespace Sitecore.ProtobufBrowser
         {
             var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
             if (item is null) return;
-            System.Windows.Clipboard.SetText(item.Name);
+            Clipboard.SetText(item.Name);
         }
 
         private void FieldViewCopyValue_OnClick(object sender, RoutedEventArgs e)
         {
             var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
             if (item is null) return;
-            System.Windows.Clipboard.SetText(item.Value);
+            Clipboard.SetText(item.Value);
         }
     }
 }

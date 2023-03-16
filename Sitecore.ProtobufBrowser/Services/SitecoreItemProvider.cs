@@ -21,7 +21,7 @@ namespace Sitecore.ProtobufBrowser.Services
             this.resourceLoader = resourceLoader;
         }
 
-        public BaseItem GetItems(string[] paths,string language)
+        public BaseItem GetItems(string[] paths, string language)
         {
             var provider = new ProtobufDataProvider(paths, resourceLoader);
             var secondaryProvider = GetSecondaryProviders(paths);
@@ -62,7 +62,11 @@ namespace Sitecore.ProtobufBrowser.Services
 
             var secondary = secondaryProvider?.GetItemDefinition(itemId);
 
-            if (!(secondary is null)) baseItem.Overwritten = true;
+            if (!(secondary is null))
+            {
+                baseItem.Overwritten = true;
+                SetParentFlag(baseItem);
+            }
 
             if (!languages.Contains(language)) return baseItem;
 
@@ -74,7 +78,7 @@ namespace Sitecore.ProtobufBrowser.Services
             {
                 var itemDef = provider.GetItemDefinition(ID.Parse(kvp.Key));
                 var value = kvp.Value;
-                baseItem.AddFields(kvp.Key,itemDef, value);
+                baseItem.AddFields(kvp.Key, itemDef, value);
             }
 
 
@@ -84,6 +88,17 @@ namespace Sitecore.ProtobufBrowser.Services
                 baseItem.Children.Add(GetItem(childId, provider, language, baseItem, secondaryProvider));
 
             return baseItem;
+        }
+
+        private void SetParentFlag(BaseItem baseItem)
+        {
+            var parent = baseItem.Parent as BaseItem;
+
+            if (!(parent is null))
+            {
+                parent.HasSecondaryItems = true;
+                SetParentFlag(parent);
+            }
         }
 
         private string GetItemPath(BaseItem item)

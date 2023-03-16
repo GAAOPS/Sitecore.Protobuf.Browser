@@ -46,13 +46,25 @@ namespace Sitecore.ProtobufBrowser.Models
         public IList<BaseItem> Fields { get; } = new List<BaseItem>();
 
         public string Value { get; set; }
+
+        /// <summary>
+        ///     If user choose two files (primary and secondary) indicates that item is exists in secondary file
+        /// </summary>
         public bool Overwritten { get; set; }
+
+        /// <summary>
+        ///     If user choose two files (primary and secondary) indicates that
+        ///     item children/descendents have and item from secondary file
+        /// </summary>
+        public bool HasSecondaryItems { get; set; }
+
+        public bool IsVisible => Overwritten || HasSecondaryItems;
 
         public void AddFields(Guid fieldId, ItemDefinition itemDef, string value)
         {
             Fields.Add(new BaseItem
             {
-                Name = (itemDef is null) ? fieldId.ToString() : itemDef.Name,
+                Name = itemDef is null ? fieldId.ToString() : itemDef.Name,
                 ItemDefinition = itemDef,
                 Value = value
             });
@@ -67,6 +79,5 @@ namespace Sitecore.ProtobufBrowser.Models
                 Value = value
             });
         }
-
     }
 }
