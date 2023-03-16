@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Sitecore.Data;
 using Sitecore.Data.DataProviders.ReadOnly.Protobuf;
 using Sitecore.Globalization;
@@ -42,7 +43,7 @@ namespace Sitecore.ProtobufBrowser.Services
             if (paths.Length < 2) return null;
 
             var secondaryFiles = paths.Where(path =>
-                !Databases.MainFiles.Contains(Path.GetFileName(path), StringComparer.OrdinalIgnoreCase));
+                Regex.IsMatch(path, Databases.FilesRegex));
 
             return new ProtobufDataProvider(secondaryFiles, resourceLoader);
         }

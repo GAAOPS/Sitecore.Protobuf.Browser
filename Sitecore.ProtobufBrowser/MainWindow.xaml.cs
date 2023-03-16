@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -41,13 +42,12 @@ namespace Sitecore.ProtobufBrowser
             if (dialog.ShowDialog() == true)
             {
                 var result = dialog.FileNames;
-                var validated = result.Any(file =>
-                    Databases.MainFiles.Contains(Path.GetFileName(file), StringComparer.InvariantCultureIgnoreCase));
+                var validated = result.Any(file => Regex.IsMatch(Path.GetFileName(file), Databases.FilesRegex));
 
                 if (!validated)
                 {
                     MessageBox.Show(
-                        $"You need to select at the corresponding default file:{string.Join(" or", Databases.MainFiles)}");
+                        $"You need to select at the corresponding default file: {Databases.FilesRegex}");
                     return;
                 }
 
