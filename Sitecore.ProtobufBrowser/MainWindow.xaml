@@ -5,55 +5,126 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converter="clr-namespace:Sitecore.ProtobufBrowser.Converters"
         mc:Ignorable="d"
-        Title="Sitecore Protobuf Browser" Height="450" Width="800">
+        Title="Sitecore Protobuf Browser" Height="800" Width="1200" 
+        WindowStartupLocation="CenterScreen"
+        Loaded="MainWindow_OnLoaded"
+        Icon="pack://application:,,,/Sitecore.ProtobufBrowser;component/Properties/Resources/logo.ico">
     <Window.Resources>
         <converter:BooleanOrConverter x:Key="booleanOrConverter" />
         <converter:InverseBooleanConverter x:Key="inverseBooleanConverter" />
     </Window.Resources>
-
-    <Grid>
-        <DockPanel>
-            <Menu DockPanel.Dock="Top">
-                <MenuItem Header="File">
-                    <MenuItem Header="_Open" x:Name="FileOpenMenu" Click="FileOpenMenu_OnClick" />
-                    <Separator />
-                    <MenuItem Header="_Exit" x:Name="FileExitMenu" Click="FileExitMenu_OnClick" />
-                </MenuItem>
-            </Menu>
-            <StackPanel DockPanel.Dock="Top">
-                <CheckBox IsChecked="{Binding Path=HidePrimaryFileItems}" Content="Hide primary files items" />
-            </StackPanel>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300" />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <TreeView x:Name="ContentTree" MinWidth="200" ItemsSource="{Binding Children}" Grid.Column="0"
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="_Open" x:Name="FileOpenMenu" Click="FileOpenMenu_OnClick" />
+                <Separator />
+                <MenuItem Header="_Exit" x:Name="FileExitMenu" Click="FileExitMenu_OnClick" />
+            </MenuItem>
+            <MenuItem Header="_Help" x:Name="HelpMenu" Click="HelpMenu_OnClick"></MenuItem>
+        </Menu>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <CheckBox IsChecked="{Binding Path=HideMainItems}" Content="Hide Main files items" Margin="5,0,20,0"  />
+            <CheckBox IsChecked="{Binding Path=HideModuleItems}" Content="Hide module files items" />
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TreeView x:Name="ContentTree" MinWidth="200" ItemsSource="{Binding Children}" Grid.Column="0"
                           SelectedItemChanged="ContentTree_OnSelectedItemChanged">
-                    <TreeView.ItemContainerStyle>
-                        <Style TargetType="{x:Type TreeViewItem}">
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Style.Triggers>
-                                <DataTrigger Value="False">
-                                    <DataTrigger.Binding>
-                                        <MultiBinding Converter="{StaticResource booleanOrConverter}">
-                                            <Binding Path="IsVisible" />
-                                            <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
-                                            <Binding
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Value="False">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource booleanOrConverter}">
+                                        <Binding Path="NotInMain" />
+                                        <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                                        <Binding
                                                 RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}"
-                                                Path="DataContext.HidePrimaryFileItems"
+                                                Path="DataContext.HideMainItems"
                                                 Converter="{StaticResource inverseBooleanConverter}" />
-                                        </MultiBinding>
-                                    </DataTrigger.Binding>
-                                    <DataTrigger.Setters>
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger.Setters>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TreeView.ItemContainerStyle>
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="x:Type model:BaseItem" ItemsSource="{Binding Children}">
+                                    </MultiBinding>
+                                </DataTrigger.Binding>
+                                <DataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                            <DataTrigger Value="False">
+                                <DataTrigger.Binding>
+                                    <MultiBinding Converter="{StaticResource booleanOrConverter}">
+                                        <Binding Path="NotInModule" />
+                                        <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                                        <Binding
+                                                RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}"
+                                                Path="DataContext.HideModuleItems"
+                                                Converter="{StaticResource inverseBooleanConverter}" />
+                                    </MultiBinding>
+                                </DataTrigger.Binding>
+                                <DataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="x:Type model:BaseItem" ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Height="10">
+                                <Ellipse.Style>
+                                    <Style TargetType="{x:Type Ellipse}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasModuleItems}" Value="True">
+                                                <Setter Property="Fill" Value="ForestGreen" />
+                                                <Setter Property="Width" Value="10" />
+                                                <Setter Property="Margin" Value="1,1,1,1" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <Rectangle Height="10">
+                                <Rectangle.Style>
+                                    <Style TargetType="{x:Type Rectangle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsInModule}" Value="True">
+                                                <Setter Property="Fill" Value="ForestGreen" />
+                                                <Setter Property="Width" Value="8" />
+                                                <Setter Property="Margin" Value="1,1,1,1" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+                            <Ellipse Height="10">
+                                <Ellipse.Style>
+                                    <Style TargetType="{x:Type Ellipse}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsInSecondary}" Value="True">
+                                                <Setter Property="Fill" Value="Orange" />
+                                                <Setter Property="Margin" Value="1,1,1,1" />
+                                                <Setter Property="Width" Value="10" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <Rectangle Height="10">
+                                <Rectangle.Style>
+                                    <Style TargetType="{x:Type Rectangle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasSecondaryItems}" Value="True">
+                                                <Setter Property="Width" Value="8" />
+                                                <Setter Property="Margin" Value="1,1,1,1" />
+                                                <Setter Property="Fill" Value="Orange" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
                             <TextBlock Text="{Binding Name}">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
@@ -65,20 +136,31 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
-                <ListView x:Name="FieldView" Grid.Column="1">
+                        </StackPanel>
+
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="2"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                </Grid.RowDefinitions>
+                <ListView x:Name="FieldView" Grid.Row="0" Height="auto">
                     <ListView.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
                             <MenuItem x:Name="FieldViewCopyName" Header="Copy Field Name"
-                                      Command="{Binding Path=Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
-                                      Background="WhiteSmoke"
-                                      Click="FieldViewCopyName_OnClick" />
+                                              Command="{Binding Path=Name, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
+                                              Background="WhiteSmoke"
+                                              Click="FieldViewCopyName_OnClick" />
                             <MenuItem x:Name="FieldViewCopyValue" Header="Copy Field Value"
-                                      Command="{Binding Path=Value, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
-                                      Background="WhiteSmoke"
-                                      Click="FieldViewCopyValue_OnClick" />
+                                              Command="{Binding Path=Value, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}}"
+                                              Background="WhiteSmoke"
+                                              Click="FieldViewCopyValue_OnClick" />
                         </ContextMenu>
                     </ListView.Resources>
                     <ListView.ItemContainerStyle>
@@ -93,9 +175,21 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <GridSplitter Grid.Column="0" BorderThickness="2" BorderBrush="BlueViolet" />
-            </Grid>
-        </DockPanel>
+                <StackPanel Grid.Row="2">
+                    <ListView Width="auto" Name="LocationView">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Locations" DisplayMemberBinding="{Binding }" Width="1000"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
 
-    </Grid>
+                <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" Height="5" BorderBrush="BlueViolet" BorderThickness="2" />
+            </Grid>
+
+            <GridSplitter Grid.Column="0" BorderThickness="2" BorderBrush="BlueViolet" />
+        </Grid>
+    </DockPanel>
+
 </Window>

@@ -4,7 +4,12 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Properties\Resources\logo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Properties\Resources\logo.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -17,7 +22,10 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Settings\" />
-    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Properties\Resources\logo.ico" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Sitecore.Data;
@@ -57,8 +58,22 @@ namespace Sitecore.ProtobufBrowser.Models
         ///     item children/descendents have and item from secondary file
         /// </summary>
         public bool HasSecondaryItems { get; set; }
+        public bool HasModuleItems { get; set; }
 
-        public bool IsVisible => Overwritten || HasSecondaryItems;
+        /// <summary>
+        /// Based on this property the items from main file can be hidden
+        /// </summary>
+        public bool NotInMain => Overwritten || HasSecondaryItems || HasModuleItems || IsInModule || IsInSecondary;
+
+        /// <summary>
+        /// Based on this property the items from main file can be hidden
+        /// </summary>
+        public bool NotInModule => (!IsInModule || Overwritten || HasSecondaryItems);
+
+        public bool IsInMain { get; set; }
+        public bool IsInModule { get; set; }
+        public bool IsInSecondary { get; set; }
+        public IList<string> Locations { get; set; }
 
         public void AddFields(Guid fieldId, ItemDefinition itemDef, string value)
         {
