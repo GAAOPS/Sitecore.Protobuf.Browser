@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Sitecore.Data;
 using Sitecore.Data.DataProviders.ReadOnly.Protobuf;
 using Sitecore.Globalization;
 using Sitecore.ProtobufBrowser.Models;
-using Sitecore.ProtobufBrowser.Settings;
 using Version = Sitecore.Data.Version;
 
 namespace Sitecore.ProtobufBrowser.Services
@@ -21,71 +19,110 @@ namespace Sitecore.ProtobufBrowser.Services
             this.resourceLoader = resourceLoader;
         }
 
-        public BaseItem GetItems(string[] paths, string language)
+        public BaseItem GetItems(string mainFile, string moduleFile, string secondaryFile,
+            string language)
         {
-            var provider = new ProtobufDataProvider(paths, resourceLoader);
-            var secondaryProvider = GetSecondaryProviders(paths);
-            var rootChildren = provider.GetChildIds(sitecoreRootId);
+            var files = new List<string> { mainFile };
 
+            if (!string.IsNullOrEmpty(moduleFile)) files.Add(moduleFile);
+
+            if (!string.IsNullOrEmpty(secondaryFile)) files.Add(secondaryFile);
+
+            var compositeProvider = new ProtobufDataProviderEx(files, resourceLoader);
+            var mainProvider = new ProtobufDataProviderEx(new[] { mainFile }, resourceLoader);
+            var moduleProvider = string.IsNullOrEmpty(moduleFile)
+                ? null
+                : new ProtobufDataProviderEx(new[] { moduleFile }, resourceLoader);
+            var secondaryProvider = string.IsNullOrEmpty(secondaryFile)
+                ? null
+                : new ProtobufDataProviderEx(new[] { secondaryFile }, resourceLoader);
+
+            var rootChildren = compositeProvider.GetChildIds(sitecoreRootId);
             var rootItem = new BaseItem
             {
                 Name = "sitecore"
             };
+
             foreach (var childId in rootChildren)
-                rootItem.Children.Add(GetItem(childId, provider, language, rootItem, secondaryProvider));
+                rootItem.Children.Add(GetItem(childId, compositeProvider, language, rootItem, mainProvider,
+                    moduleProvider,
+                    secondaryProvider));
 
             return rootItem;
         }
 
-        private ProtobufDataProvider GetSecondaryProviders(string[] paths)
-        {
-            if (paths.Length < 2) return null;
 
-            var secondaryFiles = paths.Where(path =>
-                !Databases.MainFiles.Contains(Path.GetFileName(path), StringComparer.OrdinalIgnoreCase));
-
-            return new ProtobufDataProvider(secondaryFiles, resourceLoader);
-        }
-
-        private BaseItem GetItem(Guid id, ProtobufDataProvider provider, string language, BaseItem parent,
-            ProtobufDataProvider secondaryProvider)
+        private BaseItem GetItem(Guid id, ProtobufDataProviderEx compositeProvider, string language, BaseItem parent,
+            ProtobufDataProviderEx mainProvider,
+            ProtobufDataProviderEx moduleProvider,
+            ProtobufDataProviderEx secondaryProvider)
         {
             var baseItem = new BaseItem();
             var itemId = ID.Parse(id);
-            var definition = provider.GetItemDefinition(itemId);
+            var definition = compositeProvider.GetItemDefinition(itemId);
 
             baseItem.Name = definition.Name;
+
+            if (baseItem.Name == "Devices")
+            {
+
+            }
+
             baseItem.ItemDefinition = definition;
             baseItem.Parent = parent;
+            baseItem.Locations = new List<string>();
+            var languages = compositeProvider.GetItemLanguages(id);
 
-            var languages = provider.GetItemLanguages(id);
+            var main = mainProvider.GetItemDefinition(itemId);
+            if (!(main is null))
+            {
+                baseItem.IsInMain = true;
+                baseItem.Locations.Add(mainProvider.File);
+            }
+
+            var module = moduleProvider?.GetItemDefinition(itemId);
+
+
+            if (!(module is null))
+            {
+                baseItem.Overwritten = baseItem.IsInMain;
+                baseItem.IsInModule = true;
+                baseItem.Locations.Add(moduleProvider.File);
+                SetParentModuleFlag(baseItem);
+            }
+
 
             var secondary = secondaryProvider?.GetItemDefinition(itemId);
 
             if (!(secondary is null))
             {
-                baseItem.Overwritten = true;
+                baseItem.Overwritten = baseItem.IsInMain || baseItem.IsInModule;
+                baseItem.IsInSecondary = true;
+                baseItem.Locations.Add(secondaryProvider.File);
                 SetParentFlag(baseItem);
             }
 
             if (!languages.Contains(language)) return baseItem;
 
-            var fields = provider.GetItemFields(id, new VersionUri(Language.Parse(language), Version.Latest));
+            var fields = compositeProvider.GetItemFields(id, new VersionUri(Language.Parse(language), Version.Latest));
 
             baseItem.AddFields("(Item id)", null, itemId.ToString());
             baseItem.AddFields("(Item Path)", null, GetItemPath(baseItem));
             foreach (var kvp in fields)
             {
-                var itemDef = provider.GetItemDefinition(ID.Parse(kvp.Key));
+                var itemDef = compositeProvider.GetItemDefinition(ID.Parse(kvp.Key));
                 var value = kvp.Value;
                 baseItem.AddFields(kvp.Key, itemDef, value);
             }
 
 
-            var children = provider.GetChildIds(id);
+            var children = compositeProvider.GetChildIds(id);
 
             foreach (var childId in children)
-                baseItem.Children.Add(GetItem(childId, provider, language, baseItem, secondaryProvider));
+                baseItem.Children.Add(GetItem(childId, compositeProvider, language, baseItem,
+                    mainProvider,
+                    moduleProvider,
+                    secondaryProvider));
 
             return baseItem;
         }
@@ -101,6 +138,17 @@ namespace Sitecore.ProtobufBrowser.Services
             }
         }
 
+        private void SetParentModuleFlag(BaseItem baseItem)
+        {
+            var parent = baseItem.Parent as BaseItem;
+
+            if (!(parent is null))
+            {
+                parent.HasModuleItems = true;
+                SetParentModuleFlag(parent);
+            }
+        }
+
         private string GetItemPath(BaseItem item)
         {
             var pathStack = new Stack<string>();
@@ -108,7 +156,7 @@ namespace Sitecore.ProtobufBrowser.Services
             pathStack.Push(current.Name);
             while (!(current.Parent is null))
             {
-                current = (BaseItem) current.Parent;
+                current = (BaseItem)current.Parent;
                 pathStack.Push(current.Name);
             }
 

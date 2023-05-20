@@ -1,13 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using Sitecore.ProtobufBrowser.Models;
 using Sitecore.ProtobufBrowser.Services;
-using Sitecore.ProtobufBrowser.Settings;
 
 namespace Sitecore.ProtobufBrowser
 {
@@ -30,30 +25,14 @@ namespace Sitecore.ProtobufBrowser
 
         private void FileOpenMenu_OnClick(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog
+            var sourceDialog = new SourceFileWizard();
+
+            if (sourceDialog.ShowDialog() == true)
             {
-                CheckFileExists = true,
-                DefaultExt = ".dat",
-                Filter = "protobuf(*.dat)|*.dat",
-                Multiselect = true
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                var result = dialog.FileNames;
-                var validated = result.Any(file =>
-                    Databases.MainFiles.Contains(Path.GetFileName(file), StringComparer.InvariantCultureIgnoreCase));
-
-                if (!validated)
-                {
-                    MessageBox.Show(
-                        $"You need to select at the corresponding default file:{string.Join(" or", Databases.MainFiles)}");
-                    return;
-                }
-
                 Model.Children.Clear();
                 var language = "en";
-                var rootItem = _itemProvider.GetItems(dialog.FileNames, language);
+                var rootItem = _itemProvider.GetItems(sourceDialog.MainFile, sourceDialog.ModuleFile,
+                    sourceDialog.SecondaryFile, language);
                 Model.Children.Add(rootItem);
                 DataContext = Model;
             }
@@ -66,21 +45,46 @@ namespace Sitecore.ProtobufBrowser
 
         private void ContentTree_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (e.NewValue is BaseItem item) FieldView.ItemsSource = item.Fields;
+            if (e.NewValue is BaseItem item)
+            {
+                FieldView.ItemsSource = item.Fields;
+                LocationView.ItemsSource = item.Locations;
+            }
         }
 
         private void FieldViewCopyName_OnClick(object sender, RoutedEventArgs e)
         {
-            var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
-            if (item is null) return;
+            if (!((e.OriginalSource as MenuItem)?.DataContext is BaseItem item))
+            {
+                return;
+            }
+
             Clipboard.SetText(item.Name);
         }
 
         private void FieldViewCopyValue_OnClick(object sender, RoutedEventArgs e)
         {
-            var item = (e.OriginalSource as MenuItem)?.DataContext as BaseItem;
-            if (item is null) return;
+            if (!((e.OriginalSource as MenuItem)?.DataContext is BaseItem item))
+            {
+                return;
+            }
+
             Clipboard.SetText(item.Value);
+        }
+
+        private void HelpMenu_OnClick(object sender, RoutedEventArgs e)
+        {
+            ShowHelp();
+        }
+
+        private static void ShowHelp()
+        {
+            new Help().ShowDialog();
+        }
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ShowHelp();
         }
     }
 }

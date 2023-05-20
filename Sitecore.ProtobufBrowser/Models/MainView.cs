@@ -5,7 +5,8 @@ namespace Sitecore.ProtobufBrowser.Models
     public class MainView : BaseView<MainWindow>, IParentItem
     {
         private ObservableCollection<BaseItem> _children = new ObservableCollection<BaseItem>();
-        private bool _hidePrimaryFileItems;
+        private bool _hideMainItems;
+        private bool _hideModuleItems;
 
         public MainView(MainWindow view) : base(view)
         {
@@ -22,13 +23,23 @@ namespace Sitecore.ProtobufBrowser.Models
         }
 
 
-        public bool HidePrimaryFileItems
+        public bool HideMainItems
         {
-            get => _hidePrimaryFileItems;
+            get => _hideMainItems;
             set
             {
-                _hidePrimaryFileItems = value;
-                OnPropertyChanged(nameof(HidePrimaryFileItems));
+                _hideMainItems = value;
+                OnPropertyChanged(nameof(HideMainItems));
+            }
+        }
+
+        public bool HideModuleItems
+        {
+            get => _hideModuleItems;
+            set
+            {
+                _hideModuleItems = value;
+                OnPropertyChanged(nameof(HideModuleItems));
             }
         }
     }
